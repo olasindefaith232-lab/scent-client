@@ -1,96 +1,7 @@
 import type { Route } from "./+types/home";
 import { useMemo, useState } from "react";
-
-const products = [
-  {
-    brand: "YVES SAINT LAURENT",
-    name: "Libre Eau de Parfum",
-    notes: "Orange blossom · lavender · vanilla",
-    price: 185000,
-    category: "Floral",
-    badge: "BESTSELLER",
-    image:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    brand: "MAISON MARGIELA",
-    name: "Jazz Club",
-    notes: "Pink pepper · rum · tobacco leaf",
-    price: 212000,
-    category: "Woody",
-    badge: "NEW ARRIVAL",
-    image:
-      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    brand: "LATTAFA",
-    name: "Khamrah Eau de Parfum",
-    notes: "Cinnamon · praline · vanilla",
-    price: 55000,
-    category: "Amber",
-    badge: "LOVED",
-    image:
-      "https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=900&q=85",
-  },
-  {
-    brand: "JO MALONE LONDON",
-    name: "Wood Sage & Sea Salt",
-    notes: "Ambrette · sea salt · sage",
-    price: 168000,
-    category: "Fresh",
-    badge: "EDITOR'S PICK",
-    image:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=900&q=85",
-  },
-];
-
-const categories = [
-  {
-    name: "Floral",
-    note: "Soft, romantic, unforgettable",
-    image:
-      "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    name: "Woody",
-    note: "Warm notes with presence",
-    image:
-      "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    name: "Fresh",
-    note: "Bright, airy, made for today",
-    image:
-      "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1000&q=85",
-  },
-  {
-    name: "Amber",
-    note: "Rich, warm, close to the skin",
-    image:
-      "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1000&q=85",
-  },
-];
-
-const formatPrice = (price: number) =>
-  `₦${new Intl.NumberFormat("en-NG").format(price)}`;
-
-function SearchIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="10.8" cy="10.8" r="6.3" />
-      <path d="m15.5 15.5 4.2 4.2" />
-    </svg>
-  );
-}
-
-function BagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 8.5h14l1 12H4l1-12Z" />
-      <path d="M9 9V6a3 3 0 0 1 6 0v3" />
-    </svg>
-  );
-}
+import { categories, formatPrice, products } from "../data/catalog";
+import { useStore } from "../components/site-shell";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -105,11 +16,10 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All scents");
-  const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [bagCount, setBagCount] = useState(0);
   const [bagMessage, setBagMessage] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const { addToBag: addProductToBag } = useStore();
 
   const visibleProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -125,61 +35,13 @@ export default function Home() {
     });
   }, [activeCategory, search]);
 
-  function addToBag(name: string) {
-    setBagCount((count) => count + 1);
+  function announceAdded(name: string) {
     setBagMessage(`${name} added to your bag`);
     window.setTimeout(() => setBagMessage(""), 2600);
   }
 
   return (
     <>
-      <div className="announcement">
-        <span>Complimentary delivery on orders over ₦150,000</span>
-        <a href="#featured">Discover the collection <span aria-hidden="true">↗</span></a>
-      </div>
-
-      <header className="site-header">
-        <a className="wordmark" href="#home" aria-label="Scent by Kim home">
-          <span className="wordmark-monogram">SK</span>
-          <span className="wordmark-name">SCENT BY KIM</span>
-        </a>
-        <nav className="main-nav" aria-label="Main navigation">
-          <a href="#home">Home</a>
-          <a href="#featured">Shop</a>
-          <a href="#categories">Collections</a>
-          <a href="#story">Our story</a>
-        </nav>
-        <div className="header-actions">
-          <button
-            className="icon-button search-toggle"
-            type="button"
-            aria-label={searchOpen ? "Close search" : "Open search"}
-            aria-expanded={searchOpen}
-            onClick={() => setSearchOpen((open) => !open)}
-          >
-            <SearchIcon />
-          </button>
-          <a className="bag-link" href="#featured" aria-label={`Shopping bag, ${bagCount} items`}>
-            <BagIcon />
-            <span>Bag</span>
-            <span className="bag-count">{bagCount}</span>
-          </a>
-        </div>
-        {searchOpen && (
-          <form className="search-panel" onSubmit={(event) => event.preventDefault()}>
-            <label htmlFor="site-search">Find your next fragrance</label>
-            <input
-              id="site-search"
-              autoFocus
-              type="search"
-              placeholder="Try a name, note or mood"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </form>
-        )}
-      </header>
-
       <main>
         <section className="hero" id="home">
           <div className="hero-copy">
@@ -258,7 +120,7 @@ export default function Home() {
                   <div className="product-image-wrap">
                     <img src={product.image} alt={`${product.name} perfume`} loading="lazy" />
                     <span className="product-badge">{product.badge}</span>
-                    <button className="quick-add" type="button" onClick={() => addToBag(product.name)} aria-label={`Add ${product.name} to bag`}>+</button>
+                    <button className="quick-add" type="button" onClick={() => { addProductToBag(product); announceAdded(product.name); }} aria-label={`Add ${product.name} to bag`}>+</button>
                   </div>
                   <div className="product-info">
                     <div className="product-title-row"><span className="product-brand">{product.brand}</span><span className="product-price">{formatPrice(product.price)}</span></div>
@@ -302,16 +164,6 @@ export default function Home() {
           </form>
         </section>
       </main>
-
-      <footer className="site-footer">
-        <div className="footer-main">
-          <div className="footer-brand"><a className="wordmark footer-wordmark" href="#home"><span className="wordmark-monogram">SK</span><span className="wordmark-name">SCENT BY KIM</span></a><p>A signature scent<br />for every story.</p></div>
-          <div className="footer-column"><h3>Explore</h3><a href="#featured">Shop all</a><a href="#categories">Collections</a><a href="#story">Our story</a></div>
-          <div className="footer-column"><h3>Here to help</h3><a href="mailto:hello@scentbykim.com">Contact us</a><a href="#newsletter">Delivery & returns</a><a href="#newsletter">Frequently asked</a></div>
-          <div className="footer-column"><h3>Find us</h3><a href="https://www.instagram.com/" target="_blank" rel="noreferrer">Instagram ↗</a><a href="https://www.tiktok.com/" target="_blank" rel="noreferrer">TikTok ↗</a><a href="mailto:hello@scentbykim.com">hello@scentbykim.com</a></div>
-        </div>
-        <div className="footer-bottom"><span>© 2026 Scent by Kim</span><span>LAGOS, NIGERIA</span><div><a href="#newsletter">Privacy</a><a href="#newsletter">Terms</a></div></div>
-      </footer>
 
       <p className="sr-only" aria-live="polite">{bagMessage}</p>
     </>
